@@ -12,6 +12,26 @@
 <body>
     <canvas id="gameCanvas" width="400" height="600"></canvas>
     <script>
+        // Backgroung
+        const backgroundImage = new Image();
+        backgroundImage.src = 'background.jpeg';
+        
+        // Platform
+        const platformImage = new Image();
+        platformImage.src = 'platform.png';
+        
+        // Player character
+        const playerImage = new Image();
+        playerImage.src = 'player_character.png';
+
+        // Enemies characters
+        const enemyImageType1 = new Image();
+        enemyImageType1.src = 'enemy_type1.png'; // 🐉 dark dragon
+        const enemyImageType2 = new Image();
+        enemyImageType2.src = 'enemy_type2.png'; // 🔥 red dragon
+
+
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -27,8 +47,8 @@
         let player = {
             x: canvas.width / 2,
             y: canvas.height - 150,
-            width: 20,
-            height: 20,
+            width: 50,
+            height: 50,
             speed: 5,
             velX: 0,
             velY: 0,
@@ -52,7 +72,7 @@
                 x: Math.random() * (canvas.width - 50),
                 y: canvas.height - (100 * i) - 50,
                 width: 100,
-                height: 10,
+                height: 20,
                 timeOccupied: 0,
                 isFalling: false,
                 hasEnemy: hasEnemy,
@@ -245,15 +265,18 @@
             // Clear screen
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw player
-            ctx.fillStyle = 'red';
-            ctx.fillRect(player.x, player.y, player.width, player.height);
+            // Draw the background
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
+            // Draw player with image
+            ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+
 
             // Draw platforms and enemies
             platforms.forEach(platform => {
                 // Platform
                 ctx.fillStyle = 'black';
-                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+                ctx.drawImage(platformImage, platform.x, platform.y, platform.width, platform.height);
 
                 // Platform level label every 10 levels
                 if (platform.level % 10 === 0) {
@@ -271,19 +294,18 @@
                     ctx.fillText(label, labelX, labelY);
                 }
 
-                // Enemy
+                // Enemy Draw
                 if (platform.hasEnemy) {
                     const enemyX = platform.x + platform.enemyX;
-                    const enemyY = platform.y - 20;
-
-                    ctx.fillStyle = platform.enemyType === 1 ? 'purple' : 'orange';
-                    ctx.fillRect(enemyX, enemyY, 20, 20);
-
-                    // Enemy eyes
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(enemyX + 5, enemyY + 5, 3, 3);
-                    ctx.fillRect(enemyX + 12, enemyY + 5, 3, 3);
-                }
+                    const enemyY = platform.y - 28; // Raise a bit for better alignment
+                    const enemySize = 35;
+                
+                    if (platform.enemyType === 1) {
+                        ctx.drawImage(enemyImageType1, enemyX, enemyY, enemySize, enemySize);
+                    } else if (platform.enemyType === 2) {
+                        ctx.drawImage(enemyImageType2, enemyX, enemyY, enemySize, enemySize);
+                    }
+                }                
             });
 
             // 6️⃣ DRAW SCORE
