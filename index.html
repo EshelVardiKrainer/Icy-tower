@@ -20,6 +20,9 @@
         const friction = 0.8;
         const baseJump = -10;
 
+        let animationId = null;
+        let hasStarted = false; // prevents game over at launch
+
         // Player
         let player = {
             x: canvas.width / 2,
@@ -74,12 +77,19 @@
         });
 
         function updateGame() {
+            
             // Movement
             if (keys[39]) {
                 if (player.velX < player.speed) player.velX++;
             }         
             if (keys[37]) {
                 if (player.velX > -player.speed) player.velX--;
+            }
+
+            animationId = requestAnimationFrame(updateGame);
+            
+            if (score > 25) {
+                hasStarted = true;
             }
 
             player.velX *= friction;
@@ -120,11 +130,21 @@
             if (player.x >= canvas.width - player.width) player.x = canvas.width - player.width;
             else if (player.x <= 0) player.x = 0;
 
-            if(player.y >= canvas.height - player.height){
-                player.y = canvas.height - player.height;
-                player.jumping = false;
-                player.velY = 0;
+            if (player.y >= canvas.height - player.height) {
+                if (!hasStarted) {
+                    // Ground acts solid before game starts
+                    player.y = canvas.height - player.height;
+                    player.velY = 0;
+                    player.jumping = false;
+                } else {
+                    // Game has started, so falling = game over
+                    showGameOver();
+                    cancelAnimationFrame(animationId);
+                }
             }
+            
+            
+            
 
             // 1️⃣ PLATFORM COLLISION + SCORING + FALLING TIMER
             platforms.forEach(platform => {
@@ -193,8 +213,9 @@
                         player.y + player.height > enemyY;
 
                     if (touchingEnemy) {
-                        alert('You were hit by an enemy! Game over.');
-                        location.reload();
+                        showGameOver();
+                        cancelAnimationFrame(animationId);
+
                     }
                 }
             });
@@ -271,11 +292,45 @@
             ctx.textAlign = 'center';
             ctx.fillText('Score: ' + score, canvas.width / 2, 40);
 
-
-            requestAnimationFrame(updateGame);
         }
 
+        function showGameOver() {
+            // Save score
+            let scores = JSON.parse(localStorage.getItem('scores') || '[]');
+            scores.push(score);
+            scores.sort((a, b) => b - a); // descending
+            scores = scores.slice(0, 10); // keep top 10
+            localStorage.setItem('scores', JSON.stringify(scores));
+        
+            // Update final score
+            document.getElementById('finalScore').textContent = score;
+        
+            // Update leaderboard
+            const list = document.getElementById('leaderboard');
+            list.innerHTML = '';
+            scores.forEach(s => {
+                const li = document.createElement('li');
+                li.textContent = s;
+                list.appendChild(li);
+            });
+        
+            // Show Game Over screen
+            document.getElementById('gameOverScreen').style.display = 'block';
+        }
+
+        function restartGame() {
+            location.reload();
+        }
+        
         updateGame();
     </script>
+    <div id="gameOverScreen" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:#000000cc; color:white; text-align:center; padding-top:100px; font-family:Arial;">
+        <h1>GAME OVER</h1>
+        <p>Your Score: <span id="finalScore">0</span></p>
+        <button onclick="restartGame()" style="padding:10px 20px; font-size:18px;">Play Again</button>
+        <h2>Top Scores</h2>
+        <ol id="leaderboard"></ol>
+    </div>
+    
 </body>
 </html>
