@@ -27,10 +27,6 @@
         // Platform
         const platformImage = new Image();
         platformImage.src = 'platform.png';
-        
-        // Player character
-        const playerImage = new Image();
-        playerImage.src = 'player_character.png';
 
         // Enemies characters
         const enemyImageType1 = new Image();
@@ -40,6 +36,13 @@
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+
+        // Star power
+        const starImage = new Image();
+        starImage.src = 'power_star.png';
+        let isInvincible = false;
+        let invincibilityStartTime = 0;
+
 
         // Game settings
         const gravity = 0.5;
@@ -60,6 +63,9 @@
             velY: 0,
             jumping: false
         };
+        // Player character
+        const playerImage = new Image();
+        playerImage.src = 'player_character.png';
 
         // Scoring
         let score = 0;
@@ -78,6 +84,7 @@
         const hasEnemy = Math.random() < 0.05;
         const enemyType = hasEnemy ? (Math.random() < 0.5 ? 1 : 2) : null;
         const isMovingVertically = Math.random() < verticalMoveChance;
+        const hasStar = Math.random() < 0.1; // 10% chance
 
         for (let i = 0; i < 10; i++) {
             const gap = Math.floor(Math.random() * (maxPlatformGap - minPlatformGap + 1)) + minPlatformGap;
@@ -102,13 +109,11 @@
                 enemyDirection: 1,
                 isMovingVertically: isMovingVertically,
                 verticalDir: 1,
-                verticalOffset: 0
+                verticalOffset: 0,
+                hasStar: hasStar
             });
         }
         
-
-        
-
         // Key Listener
         let keys = [];
         window.addEventListener('keydown', function(e) {
@@ -123,6 +128,12 @@
         });
 
         function updateGame() {
+            // Star powerup status
+            if (isInvincible && Date.now() - invincibilityStartTime > 7000) {
+                isInvincible = false;
+            }
+
+            // Play Music
             bgMusic.play();
             
             // Movement
@@ -171,8 +182,9 @@
                         platform.enemyType = enemyType;
                         platform.enemyX = 0;
                         platform.enemyDirection = 1;
+                        platform.hasStar = Math.random() < 0.1;
                     
-                        // 👇 NEW vertical movement reset
+                        // Vertical movement reset
                         platform.isMovingVertically = isMovingVertically;
                         platform.verticalOffset = 0;
                         platform.verticalDir = 1;
@@ -211,10 +223,7 @@
                 }
             }
             
-            
-            
-
-            // 1️⃣ PLATFORM COLLISION + SCORING + FALLING TIMER
+            // PLATFORM COLLISION + SCORING + FALLING TIMER
             platforms.forEach(platform => {
                 const collidingWithPlayer =
                     player.x < platform.x + platform.width &&
@@ -255,7 +264,7 @@
                 }
             });
 
-            // 2️⃣ ENEMY MOVEMENT (TYPE 2 ONLY)
+            // ENEMY MOVEMENT (TYPE 2 ONLY)
             platforms.forEach(platform => {
                 if (platform.hasEnemy && platform.enemyType === 2) {
                     platform.enemyX += platform.enemyDirection * 1.5;
@@ -266,7 +275,7 @@
                 }
             });
 
-            // 3️⃣ ENEMY COLLISION CHECK — PLAYER TOUCH = GAME OVER
+            // ENEMY COLLISION CHECK — PLAYER TOUCH = GAME OVER
             platforms.forEach(platform => {
                 if (platform.hasEnemy) {
                     const enemyWidth = 20;
@@ -280,7 +289,7 @@
                         player.y < enemyY + enemyHeight &&
                         player.y + player.height > enemyY;
 
-                    if (touchingEnemy) {
+                    if (touchingEnemy && !isInvincible) {
                         showGameOver();
                         cancelAnimationFrame(animationId);
 
@@ -288,7 +297,31 @@
                 }
             });
 
-            // 4️⃣ PLATFORM BEHAVIOR: FALLING + RESET STAND TIME
+            // Star collection
+            platforms.forEach(platform => {
+                if (platform.hasStar) {
+                    const starSize = 24;
+                    const starX = platform.x + platform.width / 2 - starSize / 2;
+                    const starY = platform.y - starSize - 5;
+
+                    const touchingStar =
+                        player.x < starX + starSize &&
+                        player.x + player.width > starX &&
+                        player.y < starY + starSize &&
+                        player.y + player.height > starY;
+
+                    if (touchingStar) {
+                        platform.hasStar = false; // remove the star
+
+                        // Activate invincibility
+                        isInvincible = true;
+                        invincibilityStartTime = Date.now();
+                    }
+                }
+            });
+
+
+            // PLATFORM BEHAVIOR: FALLING + RESET STAND TIME
             platforms.forEach(platform => {
                 if (platform.isFalling) {
                     platform.y += 5;
@@ -308,7 +341,7 @@
                 }
             });
 
-            // 5️⃣ DRAW EVERYTHING (PLATFORMS + ENEMIES + LEVEL LABELS)
+            // DRAW EVERYTHING (PLATFORMS + ENEMIES + LEVEL LABELS)
 
             // Clear screen
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -318,8 +351,25 @@
 
             // Draw player with image
             ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
-
-
+            
+            // Glow effect when invincible
+            if (isInvincible) {
+                ctx.save();
+                ctx.shadowColor = 'gold';
+                ctx.shadowBlur = 15;
+                ctx.strokeStyle = 'gold';
+                ctx.lineWidth = 4;
+            
+                const centerX = player.x + player.width / 2;
+                const centerY = player.y + player.height / 2;
+                const radius = Math.max(player.width, player.height) / 2 + 5;
+            
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }            
+            
             // Draw platforms and enemies
             platforms.forEach(platform => {
                 // Platform
@@ -353,10 +403,19 @@
                     } else if (platform.enemyType === 2) {
                         ctx.drawImage(enemyImageType2, enemyX, enemyY, enemySize, enemySize);
                     }
+                }
+                
+                // Star powerup
+                if (platform.hasStar) {
+                    const starSize = 24;
+                    const starX = platform.x + platform.width / 2 - starSize / 2;
+                    const starY = platform.y - starSize - 5;
+                
+                    ctx.drawImage(starImage, starX, starY, starSize, starSize);
                 }                
             });
 
-            // 6️⃣ DRAW SCORE
+            // DRAW SCORE
             ctx.fillStyle = 'black';
             ctx.font = '24px Arial';
             ctx.textAlign = 'center';
