@@ -70,25 +70,31 @@
         let lastScoreTime = Date.now(); // Initialize with current time
 
         // Platforms
+        const minPlatformGap = 80;
+        const maxPlatformGap = 120;
         let platforms = [];
+        let prevY = canvas.height - 50;
+
         for (let i = 0; i < 10; i++) {
-            const hasEnemy = Math.random() < 0.05; // 5% chance
-            const enemyType = hasEnemy ? (Math.random() < 0.5 ? 1 : 2) : null;
-        
+            const gap = Math.floor(Math.random() * (maxPlatformGap - minPlatformGap + 1)) + minPlatformGap;
+            const y = prevY - gap;
+            prevY = y;
+
             platforms.push({
                 level: currentLevel++,
                 x: Math.random() * (canvas.width - 50),
-                y: canvas.height - (100 * i) - 50,
-                width: 100,
-                height: 20,
+                y: y,
+                width: 100 + Math.random() * 75,
+                height: 10,
                 timeOccupied: 0,
                 isFalling: false,
-                hasEnemy: hasEnemy,
-                enemyType: enemyType,
-                enemyX: 0, // relative to platform
-                enemyDirection: 1 // for Type2 movement
+                hasEnemy: Math.random() < 0.05,
+                enemyType: Math.random() < 0.5 ? 1 : 2,
+                enemyX: 0,
+                enemyDirection: 1
             });
         }
+
         
 
         // Key Listener
@@ -136,22 +142,24 @@
                     platform.y += scrollAmount;
 
                     if (platform.y > canvas.height) {
-                        const hasEnemy = Math.random() < 0.05;
-                        const enemyType = hasEnemy ? (Math.random() < 0.5 ? 1 : 2) : null;
-                        
-                        platform.y = -Math.random() * 100;
+                        const lastPlatformY = Math.min(...platforms.map(p => p.y));
+                        const gap = Math.floor(Math.random() * (maxPlatformGap - minPlatformGap + 1)) + minPlatformGap;
+                        platform.y = lastPlatformY - gap;
+                    
                         platform.x = Math.random() * (canvas.width - platform.width);
                         platform.level = currentLevel++;
                         platform.timeOccupied = 0;
                         platform.isFalling = false;
-                        
-                        // Reset or assign enemy
+                    
+                        const hasEnemy = Math.random() < 0.05;
+                        const enemyType = hasEnemy ? (Math.random() < 0.5 ? 1 : 2) : null;
+                    
                         platform.hasEnemy = hasEnemy;
                         platform.enemyType = enemyType;
                         platform.enemyX = 0;
                         platform.enemyDirection = 1;
-                        
                     }
+                    
                 });
             }
 
