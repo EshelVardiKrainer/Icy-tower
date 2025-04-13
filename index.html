@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platformer Game with Screen Scroll</title>
+    <style>
+        body, html { margin: 0; padding: 0; overflow: hidden; }
+        #gameCanvas { background-color: #87CEEB; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game settings
+        const gravity = 0.5;
+        const friction = 0.8;
+        const baseJump = -10;
+
+        // Player
+        let player = {
+            x: canvas.width / 2,
+            y: canvas.height - 150,
+            width: 20,
+            height: 20,
+            speed: 5,
+            velX: 0,
+            velY: 0,
+            jumping: false
+        };
+
+        // Scoring
+        let score = 0;
+        let maxPlatformLevel = -1;
+        let currentLevel = 0;
+        let lastScoreTime = Date.now(); // Initialize with current time
+
+        // Platforms
+        let platforms = [];
+        for (let i = 0; i < 10; i++) {
+            platforms.push({
+                level: currentLevel++,
+                x: Math.random() * (canvas.width - 50),
+                y: canvas.height - (100 * i) - 50,
+                width: 100,
+                height: 10
+            });
+        }
+
+        // Key Listener
+        let keys = [];
+        window.addEventListener('keydown', function(e) {
+            keys[e.keyCode] = true;
+            if (e.keyCode == 32 && !player.jumping) {
+                player.jumping = true;
+                player.velY = baseJump - Math.abs(player.velX);
+            }
+        });
+        window.addEventListener('keyup', function(e) {
+            keys[e.keyCode] = false;
+        });
+
+        function updateGame() {
+            // Movement
+            if (keys[39]) {
+                if (player.velX < player.speed) player.velX++;
+            }         
+            if (keys[37]) {
+                if (player.velX > -player.speed) player.velX--;
+            }
+
+            player.velX *= friction;
+            player.velY += gravity;
+
+            player.x += player.velX;
+            player.y += player.velY;
+
+            // Screen scroll
+            if (player.y < canvas.height / 4) {
+                const scrollAmount = Math.abs(player.velY);
+                player.y += scrollAmount;
+
+                platforms.forEach(platform => {
+                    platform.y += scrollAmount;
+
+                    if (platform.y > canvas.height) {
+                        platform.y = -Math.random() * 100;
+                        platform.x = Math.random() * (canvas.width - platform.width);
+                        platform.level = currentLevel++;
+                    }
+                });
+            }
+
+            // Canvas bounds
+            if (player.x >= canvas.width - player.width) player.x = canvas.width - player.width;
+            else if (player.x <= 0) player.x = 0;
+
+            if(player.y >= canvas.height - player.height){
+                player.y = canvas.height - player.height;
+                player.jumping = false;
+                player.velY = 0;
+            }
+
+            // Platform collision
+            platforms.forEach(platform => {
+                if (
+                    player.x < platform.x + platform.width &&
+                    player.x + player.width > platform.x &&
+                    player.y + player.height > platform.y &&
+                    player.y + player.height < platform.y + platform.height &&
+                    player.velY >= 0
+                ) {
+                    player.jumping = false;
+                    player.velY = 0;
+                    player.y = platform.y - player.height;
+
+                    // Scoring
+                    if (platform.level > maxPlatformLevel) {
+                        maxPlatformLevel = platform.level;
+                    
+                        // Time-based bonus
+                        const now = Date.now();
+                        const timeSinceLast = (now - lastScoreTime) / 1000; // in seconds
+                    
+                        let bonus = 0;
+                        if (timeSinceLast < 2) {
+                            bonus = Math.floor((2 - timeSinceLast) * 5); // up to +10 points if fast
+                        }
+                    
+                        const basePoints = maxPlatformLevel * 5;
+                        score = basePoints + bonus;
+                    
+                        lastScoreTime = now;
+                    }
+                    
+                }
+            });
+
+            // Draw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = 'red';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            platforms.forEach(platform => {
+                ctx.fillStyle = 'black';
+                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            });
+
+            ctx.fillStyle = 'black';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Score: ' + score, canvas.width / 2, 40);
+
+            requestAnimationFrame(updateGame);
+        }
+
+        updateGame();
+    </script>
+</body>
+</html>
