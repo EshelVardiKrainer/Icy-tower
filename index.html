@@ -38,8 +38,6 @@
         const enemyImageType2 = new Image();
         enemyImageType2.src = 'enemy_type2.png'; // 🔥 red dragon
 
-
-
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -74,12 +72,22 @@
         const maxPlatformGap = 120;
         let platforms = [];
         let prevY = canvas.height - 50;
+        const verticalMoveChance = 0.06; // 6%
+        const baseVerticalSpeed = 0.3;
+        const speedIncreaseEvery = 50; // platforms
+        const hasEnemy = Math.random() < 0.05;
+        const enemyType = hasEnemy ? (Math.random() < 0.5 ? 1 : 2) : null;
+        const isMovingVertically = Math.random() < verticalMoveChance;
 
         for (let i = 0; i < 10; i++) {
             const gap = Math.floor(Math.random() * (maxPlatformGap - minPlatformGap + 1)) + minPlatformGap;
             const y = prevY - gap;
             prevY = y;
-
+        
+            const hasEnemy = Math.random() < 0.05;
+            const enemyType = hasEnemy ? (Math.random() < 0.5 ? 1 : 2) : null;
+            const isMovingVertically = Math.random() < verticalMoveChance;
+        
             platforms.push({
                 level: currentLevel++,
                 x: Math.random() * (canvas.width - 50),
@@ -88,12 +96,16 @@
                 height: 10,
                 timeOccupied: 0,
                 isFalling: false,
-                hasEnemy: Math.random() < 0.05,
-                enemyType: Math.random() < 0.5 ? 1 : 2,
+                hasEnemy: hasEnemy,
+                enemyType: enemyType,
                 enemyX: 0,
-                enemyDirection: 1
+                enemyDirection: 1,
+                isMovingVertically: isMovingVertically,
+                verticalDir: 1,
+                verticalOffset: 0
             });
         }
+        
 
         
 
@@ -144,8 +156,8 @@
                     if (platform.y > canvas.height) {
                         const lastPlatformY = Math.min(...platforms.map(p => p.y));
                         const gap = Math.floor(Math.random() * (maxPlatformGap - minPlatformGap + 1)) + minPlatformGap;
-                        platform.y = lastPlatformY - gap;
                     
+                        platform.y = lastPlatformY - gap;
                         platform.x = Math.random() * (canvas.width - platform.width);
                         platform.level = currentLevel++;
                         platform.timeOccupied = 0;
@@ -153,15 +165,34 @@
                     
                         const hasEnemy = Math.random() < 0.05;
                         const enemyType = hasEnemy ? (Math.random() < 0.5 ? 1 : 2) : null;
+                        const isMovingVertically = Math.random() < verticalMoveChance;
                     
                         platform.hasEnemy = hasEnemy;
                         platform.enemyType = enemyType;
                         platform.enemyX = 0;
                         platform.enemyDirection = 1;
-                    }
                     
+                        // 👇 NEW vertical movement reset
+                        platform.isMovingVertically = isMovingVertically;
+                        platform.verticalOffset = 0;
+                        platform.verticalDir = 1;
+                    }                    
                 });
             }
+            const verticalSpeed = baseVerticalSpeed + Math.floor(maxPlatformLevel / speedIncreaseEvery) * 0.2;
+
+            platforms.forEach(platform => {
+                if (platform.isMovingVertically) {
+                    platform.verticalOffset += verticalSpeed * platform.verticalDir;
+
+                    if (Math.abs(platform.verticalOffset) > 20) {
+                        platform.verticalDir *= -1;
+                    }
+
+                    platform.y += verticalSpeed * platform.verticalDir;
+                }
+            });
+
 
             // Canvas bounds
             if (player.x >= canvas.width - player.width) player.x = canvas.width - player.width;
