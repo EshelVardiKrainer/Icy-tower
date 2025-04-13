@@ -8,6 +8,7 @@
         body, html { margin: 0; padding: 0; overflow: hidden; }
         #gameCanvas { background-color: #87CEEB; }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
     <canvas id="gameCanvas" width="400" height="600"></canvas>
@@ -461,12 +462,39 @@
                 
             });
 
-            // DRAW SCORE
-            ctx.fillStyle = 'black';
-            ctx.font = '24px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('Score: ' + score, canvas.width / 2, 40);
+            // --- Draw Score Top-Left ---
+            ctx.font = '16px "Press Start 2P", Arial';
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'left';
+            ctx.fillText('Score: ' + score, 10, 30);
 
+            // --- Power-Up Bar ---
+            if (isInvincible) {
+                const x = 10;
+                const y = 40;
+                const width = 120;
+                const height = 8;
+                const timeLeft = Math.max(0, 7000 - (Date.now() - invincibilityStartTime));
+                const progress = timeLeft / 7000;
+                const fillWidth = width * progress;
+
+                const gradient = ctx.createLinearGradient(x, y, x + fillWidth, y);
+                gradient.addColorStop(0, '#fff700');
+                gradient.addColorStop(1, '#ffcc00');
+
+                // Background
+                ctx.fillStyle = '#333';
+                ctx.fillRect(x, y, width, height);
+
+                // Foreground (yellow bar)
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, y, fillWidth, height);
+
+                // Border
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x, y, width, height);
+            }
         }
 
         function showGameOver() {
