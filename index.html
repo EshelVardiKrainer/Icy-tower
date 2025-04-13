@@ -46,6 +46,14 @@
         let isInvincible = false;
         let invincibilityStartTime = 0;
 
+        // Cannon
+        const cannonImage = new Image();
+        cannonImage.src = 'cannon.png';
+
+        const knightInCannonImage = new Image();
+        knightInCannonImage.src = 'knight_in_the_cannon.png';
+
+
 
         // Game settings
         const gravity = 0.5;
@@ -64,7 +72,7 @@
             speed: 5,
             velX: 0,
             velY: 0,
-            jumping: false
+            jumping: false,
         };
         // Player character
         const playerImage = new Image();
@@ -88,6 +96,8 @@
         const enemyType = hasEnemy ? (Math.random() < 0.5 ? 1 : 2) : null;
         const isMovingVertically = Math.random() < verticalMoveChance;
         const hasStar = Math.random() < 0.1; // 10% chance
+        const hasCannon = Math.random() < 0.04;
+
 
         for (let i = 0; i < 10; i++) {
             const gap = Math.floor(Math.random() * (maxPlatformGap - minPlatformGap + 1)) + minPlatformGap;
@@ -113,7 +123,9 @@
                 isMovingVertically: isMovingVertically,
                 verticalDir: 1,
                 verticalOffset: 0,
-                hasStar: hasStar
+                hasStar: hasStar,
+                hasCannon: hasCannon,
+                cannonActivated: false,
             });
         }
         
@@ -182,12 +194,16 @@
                         const hasEnemy = Math.random() < 0.05;
                         const enemyType = hasEnemy ? (Math.random() < 0.5 ? 1 : 2) : null;
                         const isMovingVertically = Math.random() < verticalMoveChance;
+                        const hasCannon = Math.random() < 0.04;
                     
                         platform.hasEnemy = hasEnemy;
                         platform.enemyType = enemyType;
                         platform.enemyX = 0;
                         platform.enemyDirection = 1;
                         platform.hasStar = Math.random() < 0.1;
+                        platform.hasCannon = hasCannon;
+                        platform.cannonActivated = false;
+
                     
                         // Vertical movement reset
                         platform.isMovingVertically = isMovingVertically;
@@ -243,6 +259,13 @@
                     player.velY = 0;
                     player.y = platform.y - player.height;
 
+                    // 🚀 Trigger cannon launch
+                    if (platform.hasCannon && !platform.cannonActivated) {
+                        platform.cannonActivated = true;
+                        player.velY = -35; // immediate super jump
+                        player.jumping = true;
+                    }
+                    
                     // Increase timer while standing
                     platform.timeOccupied += 1 / 60;
 
@@ -358,7 +381,7 @@
             ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
             // Draw player with image
-            ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
+            ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);        
             
             // Glow effect when invincible
             if (isInvincible) {
@@ -413,14 +436,23 @@
                     }
                 }
                 
-                // Star powerup
+                // Star powerup Draw
                 if (platform.hasStar) {
                     const starSize = 24;
                     const starX = platform.x + platform.width / 2 - starSize / 2;
                     const starY = platform.y - starSize - 5;
                 
                     ctx.drawImage(starImage, starX, starY, starSize, starSize);
-                }                
+                } 
+                
+                // Cannon Draw
+                if (platform.hasCannon) {
+                    const cannonX = platform.x + platform.width / 2 - 35;
+                    const cannonY = platform.y - 35;
+                
+                    ctx.drawImage(cannonImage, cannonX, cannonY, 70, 70);
+                }
+                
             });
 
             // DRAW SCORE
