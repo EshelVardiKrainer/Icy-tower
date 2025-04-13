@@ -13,8 +13,11 @@
     <canvas id="gameCanvas" width="400" height="600"></canvas>
     <script>
         // Load sounds
+        // Star powerup sounds
         const starCollectSound = new Audio('collect_star.mp3');
         const starEndSound = new Audio('star_powerup_timeout.mp3');
+        // Cannon sounds
+        const cannonShotSound = new Audio('cannon_shot.mp3');
         // BackGroung game sound effects
         const bgMusic = new Audio('ingame_sound_effect.mp3');
         bgMusic.loop = true; // Play it continuously
@@ -262,6 +265,9 @@
                     // 🚀 Trigger cannon launch
                     if (platform.hasCannon && !platform.cannonActivated) {
                         platform.cannonActivated = true;
+                        // 🔊 Play cannon sound
+                        cannonShotSound.currentTime = 0;
+                        cannonShotSound.play();
                         player.velY = -35; // immediate super jump
                         player.jumping = true;
                     }
