@@ -35,7 +35,7 @@
         // Scoring
         let score = 0;
         let maxPlatformLevel = -1;
-        let currentLevel = 0;
+        let currentLevel = 1;
         let lastScoreTime = Date.now(); // Initialize with current time
 
         // Platforms
@@ -180,7 +180,27 @@
             platforms.forEach(platform => {
                 ctx.fillStyle = 'black';
                 ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+            
+                // 👉 Draw level number for every 10th platform
+                if (platform.level % 10 === 0) {
+                    const label = platform.level;
+                    const labelX = platform.x + platform.width / 2;
+                    const labelY = platform.y - 5;
+                
+                    // Glow stroke
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.lineWidth = 4;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; // glowing white stroke
+                    ctx.strokeText(label, labelX, labelY);
+                
+                    // Fill text on top
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(label, labelX, labelY);
+                }
+                
             });
+            
 
             ctx.fillStyle = 'black';
             ctx.font = '24px Arial';
