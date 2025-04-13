@@ -12,6 +12,9 @@
 <body>
     <canvas id="gameCanvas" width="400" height="600"></canvas>
     <script>
+        // Load sounds
+        const starCollectSound = new Audio('collect_star.mp3');
+        const starEndSound = new Audio('star_powerup_timeout.mp3');
         // BackGroung game sound effects
         const bgMusic = new Audio('ingame_sound_effect.mp3');
         bgMusic.loop = true; // Play it continuously
@@ -131,7 +134,9 @@
             // Star powerup status
             if (isInvincible && Date.now() - invincibilityStartTime > 7000) {
                 isInvincible = false;
+                starEndSound.play(); // play end sound
             }
+            
 
             // Play Music
             bgMusic.play();
@@ -311,12 +316,15 @@
                         player.y + player.height > starY;
 
                     if (touchingStar) {
-                        platform.hasStar = false; // remove the star
-
+                        platform.hasStar = false;
+                    
                         // Activate invincibility
                         isInvincible = true;
                         invincibilityStartTime = Date.now();
-                    }
+                    
+                        // Play star collected sound
+                        starCollectSound.play();
+                    }       
                 }
             });
 
