@@ -12,6 +12,14 @@
 <body>
     <canvas id="gameCanvas" width="400" height="600"></canvas>
     <script>
+        // BackGroung game sound effects
+        const bgMusic = new Audio('ingame_sound_effect.mp3');
+        bgMusic.loop = true; // Play it continuously
+        bgMusic.volume = 0.5; // Optional: lower volume
+        const gameOverMusic = new Audio('game_over_sound_effect.mp3');
+        gameOverMusic.volume = 0.6; // Optional: adjust volume
+
+
         // Backgroung
         const backgroundImage = new Image();
         backgroundImage.src = 'background.jpeg';
@@ -97,6 +105,7 @@
         });
 
         function updateGame() {
+            bgMusic.play();
             
             // Movement
             if (keys[39]) {
@@ -317,6 +326,13 @@
         }
 
         function showGameOver() {
+            // Stop music
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            // Play music
+            gameOverMusic.play();
+
+
             // Save score
             let scores = JSON.parse(localStorage.getItem('scores') || '[]');
             scores.push(score);
@@ -341,6 +357,14 @@
         }
 
         function restartGame() {
+            // Stop game over music
+            gameOverMusic.pause();
+            gameOverMusic.currentTime = 0;
+
+            // Restart music
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+
             location.reload();
         }
         
