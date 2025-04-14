@@ -70,7 +70,8 @@
         const knightInCannonImage = new Image();
         knightInCannonImage.src = 'knight_in_the_cannon.png';
 
-
+        // Double Jump
+        let doubleJumpParticles = [];
 
         // Game settings
         const gravity = 0.5;
@@ -150,14 +151,33 @@
         let keys = [];
         window.addEventListener('keydown', function(e) {
             keys[e.keyCode] = true;
-            if (e.keyCode == 32 && !player.jumping) {
-                player.jumping = true;
-                player.velY = baseJump - Math.abs(player.velX);
+            if (e.keyCode === 32) {
+                if (!player.jumping) {
+                    player.jumping = true;
+                    player.velY = baseJump - Math.abs(player.velX);
+                } else if (canDoubleJump) {
+                    player.velY = baseJump - Math.abs(player.velX);
+                    canDoubleJump = false;
+
+                    // Create double jump particles
+                    for (let i = 0; i < 12; i++) {
+                        doubleJumpParticles.push({
+                            x: player.x + player.width / 2,
+                            y: player.y + player.height,
+                            radius: 2 + Math.random() * 3,
+                            angle: Math.random() * Math.PI * 2,
+                            speed: 2 + Math.random() * 2,
+                            alpha: 1
+                        });
+                    }
+                }
             }
         });
+
         window.addEventListener('keyup', function(e) {
             keys[e.keyCode] = false;
         });
+        
 
         function updateGame() {
             // Star powerup status
@@ -275,6 +295,7 @@
                     player.jumping = false;
                     player.velY = 0;
                     player.y = platform.y - player.height;
+                    canDoubleJump = true;
 
                     // 🚀 Trigger cannon launch
                     if (platform.hasCannon && !platform.cannonActivated) {
@@ -474,6 +495,28 @@
                 }
                 
             });
+
+            // --- Draw Double Jump Particles ---
+            for (let i = doubleJumpParticles.length - 1; i >= 0; i--) {
+                const p = doubleJumpParticles[i];
+
+                const dx = Math.cos(p.angle) * p.speed;
+                const dy = Math.sin(p.angle) * p.speed;
+
+                p.x += dx;
+                p.y += dy;
+                p.alpha -= 0.03;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 0, ${p.alpha})`;
+                ctx.fill();
+
+                if (p.alpha <= 0) {
+                    doubleJumpParticles.splice(i, 1);
+                }
+            }
+
 
             // --- Draw Score Top-Left ---
             ctx.font = '16px "Press Start 2P", Arial';
