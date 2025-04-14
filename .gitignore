@@ -1,0 +1,19 @@
+# Mac system files
+.DS_Store
+
+# VSCode settings
+.vscode/
+
+# Node (if added in the future)
+node_modules/
+
+# Logs and temp
+*.log
+*.tmp
+
+# OS trash folders
+Thumbs.db
+ehthumbs.db
+
+# Deployment cache (e.g. GitHub Pages)
+dist/
