@@ -95,6 +95,7 @@
         // Player character
         const playerImage = new Image();
         playerImage.src = 'player_character.png';
+        let playerFacingRight = true;
 
         // Scoring
         let score = 0;
@@ -193,10 +194,13 @@
             // Movement
             if (keys[39]) {
                 if (player.velX < player.speed) player.velX++;
-            }         
+                playerFacingRight = true;
+            }
             if (keys[37]) {
                 if (player.velX > -player.speed) player.velX--;
+                playerFacingRight = false;
             }
+            
 
             animationId = requestAnimationFrame(updateGame);
             
@@ -422,8 +426,19 @@
             ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
 
             // Draw player with image
-            ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);        
-            
+            ctx.save();
+            ctx.translate(player.x + player.width / 2, player.y + player.height / 2); // move origin to center of player
+            ctx.scale(playerFacingRight ? 1 : -1, 1); // flip horizontally if needed
+            ctx.drawImage(
+                playerImage,
+                -player.width / 2,
+                -player.height / 2,
+                player.width,
+                player.height
+            );
+            ctx.restore();
+
+        
             // Glow effect when invincible
             if (isInvincible) {
                 ctx.save();
@@ -473,8 +488,19 @@
                     if (platform.enemyType === 1) {
                         ctx.drawImage(enemyImageType1, enemyX, enemyY, enemySize, enemySize);
                     } else if (platform.enemyType === 2) {
-                        ctx.drawImage(enemyImageType2, enemyX, enemyY, enemySize, enemySize);
-                    }
+                        const enemyFlipX = platform.enemyDirection > 0 ? -1 : 1;
+                        ctx.save();
+                        ctx.translate(enemyX + enemySize / 2, enemyY + enemySize / 2); // center the flip
+                        ctx.scale(enemyFlipX, 1); // flip horizontally if needed
+                        ctx.drawImage(
+                            enemyImageType2,
+                            -enemySize / 2,
+                            -enemySize / 2,
+                            enemySize,
+                            enemySize
+                        );
+                        ctx.restore();
+                    }                    
                 }
                 
                 // Star powerup Draw
