@@ -19,12 +19,41 @@
             margin-top: 20px; /* optional spacing from the top */
             background-color: #87CEEB;
             box-shadow: 0 0 20px #000; /* optional: adds a soft shadow */
-        }        
+        }
+
+        @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+        }
+
+        #startPrompt {
+        animation: blink 1.2s infinite;
+        }
+        
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
     <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <div id="openingScreen" style="
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 600px;
+    background: url('assets/images/opening_screen.jpeg') no-repeat center center / cover;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    font-family: 'Press Start 2P', Arial, sans-serif;
+    color: white;
+    padding-bottom: 50px;
+">
+    <p id="startPrompt" style="font-size: 12px;">Press SPACE to Start</p>
+</div>
     <script>
         // Load sounds
         // Star powerup sounds
@@ -80,6 +109,7 @@
 
         let animationId = null;
         let hasStarted = false; // prevents game over at launch
+        let jumpEnabled = true; // prevent the jump after oppening screen
 
         // Player
         let player = {
@@ -152,7 +182,7 @@
         let keys = [];
         window.addEventListener('keydown', function(e) {
             keys[e.keyCode] = true;
-            if (e.keyCode === 32) {
+            if (e.keyCode === 32 && jumpEnabled) {
                 if (!player.jumping) {
                     player.jumping = true;
                     player.velY = baseJump - Math.abs(player.velX);
@@ -177,6 +207,16 @@
 
         window.addEventListener('keyup', function(e) {
             keys[e.keyCode] = false;
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' && !hasStarted) {
+                document.getElementById('openingScreen').style.display = 'none';
+                hasStarted = true;
+                jumpEnabled = false; // prevent instant jump
+                setTimeout(() => jumpEnabled = true, 300); // re-enable after 300ms
+                updateGame();
+            }
         });
         
 
@@ -273,17 +313,20 @@
             else if (player.x <= 0) player.x = 0;
 
             if (player.y >= canvas.height - player.height) {
-                if (!hasStarted) {
-                    // Ground acts solid before game starts
+                if (score < 20) {
+                    // Allow safe landing on ground early in game
                     player.y = canvas.height - player.height;
                     player.velY = 0;
                     player.jumping = false;
+                    canDoubleJump = true;
                 } else {
-                    // Game has started, so falling = game over
+                    // Game over after score >= 20
                     showGameOver();
                     cancelAnimationFrame(animationId);
                 }
             }
+            
+
             
             // PLATFORM COLLISION + SCORING + FALLING TIMER
             platforms.forEach(platform => {
@@ -622,7 +665,7 @@
             location.reload();
         }
         
-        updateGame();
+        // updateGame();
     </script>
     <div id="gameOverScreen" style="
     display: none;
