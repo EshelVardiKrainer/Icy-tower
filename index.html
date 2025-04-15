@@ -28,47 +28,47 @@
     <script>
         // Load sounds
         // Star powerup sounds
-        const starCollectSound = new Audio('collect_star.mp3');
-        const starEndSound = new Audio('star_powerup_timeout.mp3');
+        const starCollectSound = new Audio('assets/sounds/collect_star.mp3');
+        const starEndSound = new Audio('assets/sounds/star_powerup_timeout.mp3');
         // Cannon sounds
-        const cannonShotSound = new Audio('cannon_shot.mp3');
+        const cannonShotSound = new Audio('assets/sounds/cannon_shot.mp3');
         // BackGroung game sound effects
-        const bgMusic = new Audio('ingame_sound_effect.mp3');
+        const bgMusic = new Audio('assets/sounds/ingame_sound_effect.mp3');
         bgMusic.loop = true; // Play it continuously
         bgMusic.volume = 0.5; // Optional: lower volume
-        const gameOverMusic = new Audio('game_over_sound_effect.mp3');
+        const gameOverMusic = new Audio('assets/sounds/game_over_sound_effect.mp3');
         gameOverMusic.volume = 0.6; // Optional: adjust volume
 
 
         // Backgroung
         const backgroundImage = new Image();
-        backgroundImage.src = 'background.jpeg';
+        backgroundImage.src = 'assets/images/background.jpeg';
         
         // Platform
         const platformImage = new Image();
-        platformImage.src = 'platform.png';
+        platformImage.src = 'assets/images/platform.png';
 
         // Enemies characters
         const enemyImageType1 = new Image();
-        enemyImageType1.src = 'enemy_type1.png'; // 🐉 dark dragon
+        enemyImageType1.src = 'assets/images/enemy_type1.png'; // 🐉 dark dragon
         const enemyImageType2 = new Image();
-        enemyImageType2.src = 'enemy_type2.png'; // 🔥 red dragon
+        enemyImageType2.src = 'assets/images/enemy_type2.png'; // 🔥 red dragon
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
         // Star power
         const starImage = new Image();
-        starImage.src = 'power_star.png';
+        starImage.src = 'assets/images/power_star.png';
         let isInvincible = false;
         let invincibilityStartTime = 0;
 
         // Cannon
         const cannonImage = new Image();
-        cannonImage.src = 'cannon.png';
+        cannonImage.src = 'assets/images/cannon.png';
 
         const knightInCannonImage = new Image();
-        knightInCannonImage.src = 'knight_in_the_cannon.png';
+        knightInCannonImage.src = 'assets/images/knight_in_the_cannon.png';
 
         // Double Jump
         let doubleJumpParticles = [];
@@ -94,7 +94,7 @@
         };
         // Player character
         const playerImage = new Image();
-        playerImage.src = 'player_character.png';
+        playerImage.src = 'assets/images/player_character.png';
         let playerFacingRight = true;
 
         // Scoring
