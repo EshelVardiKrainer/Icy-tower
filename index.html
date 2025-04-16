@@ -67,7 +67,18 @@
         bgMusic.volume = 0.5; // Optional: lower volume
         const gameOverMusic = new Audio('assets/sounds/game_over_sound_effect.mp3');
         gameOverMusic.volume = 0.6; // Optional: adjust volume
+        // Weather sounds
+        const rainSound = new Audio('assets/sounds/rain_sound.mp3');
+        const snowSound = new Audio('assets/sounds/snow_sound.mp3');
+        const fogSound = new Audio('assets/sounds/fog_sound.mp3');
 
+        rainSound.loop = true;
+        snowSound.loop = true;
+        fogSound.loop = true;
+
+        rainSound.volume = 0.4;
+        snowSound.volume = 0.5;
+        fogSound.volume = 0.5;
 
         // Backgroung
         const backgroundImage = new Image();
@@ -685,9 +696,17 @@
             // Stop music
             bgMusic.pause();
             bgMusic.currentTime = 0;
+            // Stop weather sounds
+            rainSound.pause();
+            snowSound.pause();
+            fogSound.pause();
+
+            rainSound.currentTime = 0;
+            snowSound.currentTime = 0;
+            fogSound.currentTime = 0;
+
             // Play music
             gameOverMusic.play();
-
 
             // Save score
             let scores = JSON.parse(localStorage.getItem('scores') || '[]');
@@ -752,7 +771,29 @@
             } else if (currentWeather === 'foggy') {
                 fogOffset = 0;
             }
-        }             
+
+            playWeatherSound();
+        }  
+        
+        function playWeatherSound() {
+            // Stop all weather sounds
+            rainSound.pause();
+            snowSound.pause();
+            fogSound.pause();
+        
+            rainSound.currentTime = 0;
+            snowSound.currentTime = 0;
+            fogSound.currentTime = 0;
+        
+            // Play the current weather sound
+            if (currentWeather === 'rainy') {
+                rainSound.play();
+            } else if (currentWeather === 'snowy') {
+                snowSound.play();
+            } else if (currentWeather === 'foggy') {
+                fogSound.play();
+            }
+        }        
         
         // updateGame();
     </script>
