@@ -87,6 +87,8 @@
         // Platform
         const platformImage = new Image();
         platformImage.src = 'assets/images/platform.png';
+        const crackedPlatformImage = new Image();
+        crackedPlatformImage.src = 'assets/images/platform_cracked.png';
 
         // Enemies characters
         const enemyImageType1 = new Image();
@@ -174,6 +176,7 @@
             const hasEnemy = Math.random() < 0.05;
             const enemyType = hasEnemy ? (Math.random() < 0.5 ? 1 : 2) : null;
             const isMovingVertically = Math.random() < verticalMoveChance;
+            const isCracked = Math.random() < 0.08; 
         
             platforms.push({
                 level: currentLevel++,
@@ -181,6 +184,7 @@
                 y: y,
                 width: 100 + Math.random() * 75,
                 height: 20,
+                isCracked: isCracked,
                 timeOccupied: 0,
                 isFalling: false,
                 hasEnemy: hasEnemy,
@@ -190,11 +194,12 @@
                 isMovingVertically: isMovingVertically,
                 verticalDir: 1,
                 verticalOffset: 0,
-                hasStar: hasStar,
-                hasCannon: hasCannon,
+                hasStar: Math.random() < 0.1,
+                hasCannon: Math.random() < 0.04,
                 cannonActivated: false,
             });
         }
+        
         
         // Key Listener
         let keys = [];
@@ -303,6 +308,7 @@
                         platform.hasStar = Math.random() < 0.1;
                         platform.hasCannon = hasCannon;
                         platform.cannonActivated = false;
+                        platform.isFalling = false;
 
                     
                         // Vertical movement reset
@@ -376,8 +382,8 @@
                     // Increase timer while standing
                     platform.timeOccupied += 1 / 60;
 
-                    // Make platform fall if standing for 4 seconds
-                    if (platform.timeOccupied >= 4) {
+                    // Make platform fall if standing for 1 seconds or 0.1 if cracked
+                    if (platform.timeOccupied >= (platform.isCracked ? 0.1 : 1)) {
                         platform.isFalling = true;
                     }
 
@@ -523,8 +529,9 @@
             // Draw platforms and enemies
             platforms.forEach(platform => {
                 // Platform
-                ctx.fillStyle = 'black';
-                ctx.drawImage(platformImage, platform.x, platform.y, platform.width, platform.height);
+                const imageToDraw = platform.isCracked ? crackedPlatformImage : platformImage;
+                ctx.drawImage(imageToDraw, platform.x, platform.y, platform.width, platform.height);
+
 
                 // Platform level label every 10 levels
                 if (platform.level % 10 === 0) {
