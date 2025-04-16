@@ -287,7 +287,7 @@
                     
                         platform.hasEnemy = hasEnemy;
                         platform.enemyType = enemyType;
-                        platform.enemyX = 0;
+                        platform.enemyX = Math.random() * (platform.width - 50); // assuming enemy size is 50
                         platform.enemyDirection = 1;
                         platform.hasStar = Math.random() < 0.1;
                         platform.hasCannon = hasCannon;
@@ -535,7 +535,7 @@
                 if (platform.hasEnemy) {
                     const enemyX = platform.x + platform.enemyX;
                     const enemyY = platform.y - 28; // Raise a bit for better alignment
-                    const enemySize = 35;
+                    const enemySize = 50;
                 
                     if (platform.enemyType === 1) {
                         ctx.drawImage(enemyImageType1, enemyX, enemyY, enemySize, enemySize);
